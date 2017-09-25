@@ -5,18 +5,19 @@
        xmlns:tx="http://www.springframework.org/schema/tx"
        xsi:schemaLocation="
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-        http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd
-        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
     <tx:annotation-driven/>
 
     <jdbc:initialize-database data-source="dataSource" enabled="true">
+        <jdbc:script encoding="utf-8" location="classpath:org/springframework/batch/core/schema-hsqldb.sql"/>
         <jdbc:script encoding="utf-8" location="classpath:db/init.sql"/>
     </jdbc:initialize-database>
 
     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
         <property name="driverClass" value="org.hsqldb.jdbc.JDBCDriver"/>
-        <property name="jdbcUrl" value="jdbc:hsqldb:file:C:/temp/sbttech"/>
+        <property name="jdbcUrl" value="jdbc:hsqldb:mem:C:/temp/sbttech"/>
         <property name="user" value="admin"/>
         <property name="password" value="admin"/>
         <property name="maxPoolSize" value="5"/>

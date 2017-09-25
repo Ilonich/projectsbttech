@@ -6,7 +6,53 @@
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd">
 
-    
+    <batch:job id="personJob">
+        <batch:step id="step1">
+            <batch:tasklet>
+                <batch:chunk reader="itemReader" processor="itemProcessor" writer="itemWriter" commit-interval="2"/>
+                 <batch:listeners>
+                     <batch:listener ref="stepExecutionStatsListener" />
+                 </batch:listeners>
+            </batch:tasklet>
+            <batch:fail on="FAILED"/>
+            <batch:end on="*"/>
+        </batch:step>
+    </batch:job>
 
+    <batch:job-repository id="jobRepository"/>
+
+    <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+        <property name="jobRepository" ref="jobRepository"/>
+    </bean>
+
+    <bean id="stepExecutionStatsListener" class="com.epam.study.module1.batch.StepExecutionStatsListener"/>
+
+    <bean id="itemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+        <property name="resource" value="classpath:test/test-data.csv"/>
+        <property name="lineMapper">
+            <bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+                <property name="lineTokenizer">
+                    <bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+                        <property name="names" value="firstName,lastName"/>
+                    </bean>
+                </property>
+                <property name="fieldSetMapper">
+                    <bean class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+                        <property name="targetType" value="com.epam.study.module1.model.Person"/>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="itemProcessor" class="com.epam.study.module1.batch.PersonItemProcessor"/>
+
+    <bean id="itemWriter" class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+        <property name="itemSqlParameterSourceProvider">
+            <bean class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider"/>
+        </property>
+        <property name="sql" value="INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)"/>
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
 
 </beans>
